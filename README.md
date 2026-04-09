@@ -2,6 +2,8 @@
 
 A high-fidelity, interactive React component that translates a physical "Wall Calendar" aesthetic into a functional digital experience. Built for the Frontend Engineering Challenge.
 
+**[Live Demo 🚀](https://interactive-calendar-thp7.onrender.com)**
+
 ![Calendar Preview](https://images.unsplash.com/photo-1491002052546-bf38f186af56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80)
 
 ## 🌟 Stand-Out Features
