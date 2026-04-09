@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+/* ─── Dark mode via .dark class on <html> ───────────────────────────── */
+@custom-variant dark (&:is(.dark, .dark *));
+
+/* ─── Design Tokens ─────────────────────────────────────────────────── */
+@theme {
+  /* Brand colors — overridden dynamically per month via inline CSS vars */
+  --color-primary:       #8EA4A4;
+  --color-primary-dark:  #6e8484;
+  --color-accent:        #E6A58E;
+
+  /* Semantic surface / text */
+  --color-bg-base:   #F2EFE9;
+  --color-bg-card:   #FFFFFF;
+  --color-surface:   #F9F7F4;
+  --color-text-dark: #2F3636;
+  --color-text-muted: #6B7280;
+  --color-border:    rgb(0 0 0 / 0.07);
+
+  /* Typography */
+  --font-sans:    'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  /* ── Keyframe animations ─── */
+  @keyframes slideFromRight {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideFromLeft {
+    from { opacity: 0; transform: translateX(-28px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.80); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes spinnerRotate {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes popIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Animation utilities */
+  --animate-slide-right: slideFromRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-left:  slideFromLeft  0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-up:     fadeUp         0.38s ease-out both;
+  --animate-scale-in:    scaleIn        0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-pop-in:      popIn          0.30s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Base Styles ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Dark mode base overrides */
+.dark body {
+  background-color: #0F1117;
+  color: #E8EAF0;
+}
+
+/* ─── Animation helpers ─────────────────────────────────────────────── */
+.animate-slide-right { animation: var(--animate-slide-right); }
+.animate-slide-left  { animation: var(--animate-slide-left); }
+.animate-fade-up     { animation: var(--animate-fade-up); }
+.animate-scale-in    { animation: var(--animate-scale-in); }
+.animate-pop-in      { animation: var(--animate-pop-in); }
+
+/* ─── Calendar Card ─────────────────────────────────────────────────── */
+.calendar-card {
+  position: relative;
+}
+
+/* Page-curl decorative corner (right panel bottom-right) */
+.page-curl-corner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 36px 36px;
+  border-color: transparent transparent rgba(0,0,0,0.08) transparent;
+  transition: border-width 0.25s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+.calendar-card:hover .page-curl-corner {
+  border-width: 0 0 52px 52px;
+}
+.dark .page-curl-corner {
+  border-color: transparent transparent rgba(255,255,255,0.06) transparent;
+}
+
+/* Rings at top simulating a wall calendar binding */
+.calendar-rings {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 20%;
+  position: absolute;
+  top: -14px;
+  left: 0; right: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+.calendar-ring {
+  width: 22px;
+  height: 28px;
+  border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+  border: 3px solid #9CA3AF;
+  border-bottom: none;
+  background: linear-gradient(180deg, #E5E7EB 0%, #9CA3AF 100%);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+}
+.dark .calendar-ring {
+  border-color: #4B5563;
+  background: linear-gradient(180deg, #374151 0%, #1F2937 100%);
+}
+
+/* ─── CalendarGrid ─────────────────────────────────────────────────── */
+
+/* Today indicator pulse ring */
+.today-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.5;
+  animation: pulseRing 2.5s ease-out infinite;
+}
+@keyframes pulseRing {
+  0%   { transform: scale(1);    opacity: 0.5; }
+  70%  { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+/* Holiday dot */
+.holiday-dot {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  flex-shrink: 0;
+}
+
+/* ─── Notebook lines for notes textarea ─────────────────────────────── */
+.notebook-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    rgba(0, 0, 0, 0.07) 31px,
+    rgba(0, 0, 0, 0.07) 32px
+  );
+  line-height: 32px;
+  background-attachment: local;
+}
+.dark .notebook-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    rgba(255, 255, 255, 0.06) 31px,
+    rgba(255, 255, 255, 0.06) 32px
+  );
+}
+
+/* ─── Image shimmer skeleton ────────────────────────────────────────── */
+.img-skeleton {
+  background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+.dark .img-skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
