@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { monthThemes } from '../data/monthThemes';
 import CalendarGrid from './CalendarGrid';
 import RangeSummary from './RangeSummary';
-import ThemeToggle  from './ThemeToggle';
+import ThemeToggle from './ThemeToggle';
 
 /* ── Simple inline month notes (keyed per month via localStorage) ──────── */
 function MonthNotes({ monthKey }) {
@@ -34,13 +34,13 @@ function MonthNotes({ monthKey }) {
 /* ──────────────────────────────────────────────────────────────────────── */
 export default function CalendarCard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [startDate,    setStartDate]    = useState(null);
-  const [endDate,      setEndDate]      = useState(null);
-  const [hoverDate,    setHoverDate]    = useState(null);
-  const [animKey,      setAnimKey]      = useState(0);
-  const [slideDir,     setSlideDir]     = useState('next');
-  const [imgLoaded,    setImgLoaded]    = useState(false);
-  const [imgError,     setImgError]     = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [hoverDate, setHoverDate] = useState(null);
+  const [animKey, setAnimKey] = useState(0);
+  const [slideDir, setSlideDir] = useState('next');
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const theme = monthThemes[currentMonth.getMonth()];
 
@@ -89,7 +89,7 @@ export default function CalendarCard() {
   };
 
   const monthKey = format(currentMonth, 'yyyy-MM');
-  const RINGS    = 17;
+  const RINGS = 17;
 
   return (
     <div
@@ -121,7 +121,7 @@ export default function CalendarCard() {
           overflow: 'hidden',                  /* clips image + wave */
           boxShadow: '0 30px 80px rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.20)',
           '--color-primary': theme.primary,
-          '--color-accent':  theme.accent,
+          '--color-accent': theme.accent,
         }}
       >
 
@@ -142,15 +142,15 @@ export default function CalendarCard() {
                 key={i}
                 aria-hidden="true"
                 style={{
-                  width:        '14px',
-                  height:       '22px',
+                  width: '14px',
+                  height: '22px',
                   borderRadius: '0 0 50% 50%',
-                  background:   'linear-gradient(180deg, #E8EAED 0%, #9AA0AB 60%, #6B717C 100%)',
-                  border:       '1.5px solid #777E8A',
-                  borderTop:    'none',
-                  boxShadow:    'inset 0 -2px 4px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.35)',
-                  marginTop:    '0',
-                  flexShrink:   0,
+                  background: 'linear-gradient(180deg, #E8EAED 0%, #9AA0AB 60%, #6B717C 100%)',
+                  border: '1.5px solid #777E8A',
+                  borderTop: 'none',
+                  boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.35)',
+                  marginTop: '0',
+                  flexShrink: 0,
                 }}
               />
             ))}
@@ -183,7 +183,7 @@ export default function CalendarCard() {
             key={theme.image}
             src={theme.image}
             alt={`${theme.month} — ${theme.label}`}
-            onLoad={()   => { setImgLoaded(true); setImgError(false); }}
+            onLoad={() => { setImgLoaded(true); setImgError(false); }}
             onError={(e) => {
               if (!imgError && theme.fallback && e.target.src !== theme.fallback) {
                 e.target.src = theme.fallback;
@@ -347,8 +347,8 @@ export default function CalendarCard() {
             {!startDate
               ? 'Tap a date to start your range'
               : !endDate
-              ? 'Now tap an end date'
-              : 'Range set — tap any date to restart'}
+                ? 'Now tap an end date'
+                : 'Range set — tap any date to restart'}
           </span>
           {startDate && (
             <button
