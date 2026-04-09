@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { addMonths, subMonths, isBefore, format, isThisMonth } from 'date-fns';
 import { ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { monthThemes } from '../data/monthThemes';
-import CalendarGrid   from './CalendarGrid';
-import RangeSummary   from './RangeSummary';
-import ThemeToggle    from './ThemeToggle';
+import CalendarGrid from './CalendarGrid';
+import RangeSummary from './RangeSummary';
+import ThemeToggle  from './ThemeToggle';
 
-// Simple inline notes — no tabs, keyed per month, directly in left column
+/* ── Simple inline month notes (keyed per month via localStorage) ──────── */
 function MonthNotes({ monthKey }) {
   const [note, setNote] = useState('');
 
@@ -14,19 +14,16 @@ function MonthNotes({ monthKey }) {
     setNote(localStorage.getItem(`cal-note-month-${monthKey}`) || '');
   }, [monthKey]);
 
-  const handleChange = (e) => {
-    const val = e.target.value;
-    setNote(val);
-    localStorage.setItem(`cal-note-month-${monthKey}`, val);
-  };
-
   return (
     <textarea
       id="month-notes-textarea"
       className="flex-1 w-full bg-transparent resize-none outline-none text-[11px] text-gray-500 dark:text-gray-400 notebook-lines"
       placeholder=""
       value={note}
-      onChange={handleChange}
+      onChange={(e) => {
+        setNote(e.target.value);
+        localStorage.setItem(`cal-note-month-${monthKey}`, e.target.value);
+      }}
       spellCheck={false}
       style={{ lineHeight: '22px', minHeight: '150px' }}
       aria-label="Monthly notes"
@@ -34,6 +31,7 @@ function MonthNotes({ monthKey }) {
   );
 }
 
+/* ──────────────────────────────────────────────────────────────────────── */
 export default function CalendarCard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [startDate,    setStartDate]    = useState(null);
@@ -51,7 +49,7 @@ export default function CalendarCard() {
     setImgError(false);
   }, [currentMonth]);
 
-  // ── Navigation ────────────────────────────────────────────────────────
+  // ── Navigation ──────────────────────────────────────────────────────
   const navigateMonth = (dir) => {
     setSlideDir(dir);
     setAnimKey(k => k + 1);
@@ -65,7 +63,7 @@ export default function CalendarCard() {
     setCurrentMonth(now);
   };
 
-  // ── Date Selection ─────────────────────────────────────────────────────
+  // ── Date Range Selection ────────────────────────────────────────────
   const handleDateClick = (day) => {
     if (!startDate || (startDate && endDate)) {
       setStartDate(day);
@@ -91,84 +89,86 @@ export default function CalendarCard() {
   };
 
   const monthKey = format(currentMonth, 'yyyy-MM');
-  const rangeKey = startDate && endDate
-    ? `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`
-    : null;
-
-  // Number of spiral rings
-  const RINGS = 17;
+  const RINGS    = 17;
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-6 sm:p-10 relative overflow-hidden transition-colors duration-700"
-      style={{ background: 'linear-gradient(145deg, #DCDCDC 0%, #C8C8C8 100%)' }}
+      className="min-h-screen flex items-center justify-center p-4 sm:p-10 relative overflow-hidden transition-colors duration-700"
+      style={{ background: 'linear-gradient(145deg, #DCDCDC 0%, #C4C4C4 100%)' }}
     >
-      {/* Ambient glow behind card */}
+      {/* Ambient glow blob */}
       <div
-        className="absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-30 pointer-events-none transition-all duration-1000"
-        style={{ backgroundColor: theme.primary, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
+        className="absolute rounded-full pointer-events-none transition-all duration-1000"
+        style={{
+          width: '500px', height: '500px',
+          background: theme.primary,
+          filter: 'blur(120px)',
+          opacity: 0.25,
+          top: '50%', left: '50%',
+          transform: 'translate(-50%,-50%)',
+        }}
       />
 
-      {/* ─────────────────────────────────────────────
+      {/* ════════════════════════════════════════════════
           PORTRAIT CALENDAR CARD
-      ───────────────────────────────────────────── */}
+          ════════════════════════════════════════════════ */}
       <div
         id="calendar-card"
-        className="relative w-full bg-white dark:bg-gray-900 shadow-2xl flex flex-col overflow-hidden z-10 transition-all duration-700"
+        className="relative w-full bg-white dark:bg-gray-900 flex flex-col z-10 transition-all duration-700"
         style={{
-          maxWidth: '440px',
-          borderRadius: '12px',
+          maxWidth: '450px',
+          borderRadius: '14px',
+          overflow: 'hidden',                  /* clips image + wave */
+          boxShadow: '0 30px 80px rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.20)',
           '--color-primary': theme.primary,
           '--color-accent':  theme.accent,
-          boxShadow: `0 30px 80px rgba(0,0,0,0.28), 0 8px 20px rgba(0,0,0,0.18)`,
         }}
       >
 
-        {/* ══ SPIRAL RINGS ══════════════════════════════════ */}
-        {/* Positioned ABOVE the card visually (negative top) */}
+        {/* ── Binding Strip + Spiral Rings ─────────────────────────
+            Inside the card's overflow:hidden, at the very top.
+            Rings hang DOWN from the strip (borderRadius: 0 0 50% 50%). */}
         <div
-          className="absolute left-0 right-0 flex justify-around items-end px-4 z-30 pointer-events-none"
-          style={{ top: '-10px', height: '22px' }}
+          className="w-full flex-shrink-0 relative z-20"
+          style={{
+            height: '20px',
+            background: 'linear-gradient(180deg, #C9CDD4 0%, #E0E3E8 100%)',
+            borderBottom: '1px solid #B0B5BE',
+          }}
         >
-          {Array.from({ length: RINGS }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width:  '13px',
-                height: '22px',
-                borderRadius: '0 0 50% 50% / 0 0 100% 100%',
-                background:  'linear-gradient(180deg, #E5E7EB 0%, #9CA3AF 60%, #6B7280 100%)',
-                border:       '1.5px solid #6B7280',
-                borderTop:    'none',
-                boxShadow:    'inset 0 -2px 4px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3)',
-                flexShrink:   0,
-              }}
-            />
-          ))}
+          <div className="absolute inset-x-0 top-0 flex justify-around items-start px-3">
+            {Array.from({ length: RINGS }).map((_, i) => (
+              <div
+                key={i}
+                aria-hidden="true"
+                style={{
+                  width:        '14px',
+                  height:       '22px',
+                  borderRadius: '0 0 50% 50%',
+                  background:   'linear-gradient(180deg, #E8EAED 0%, #9AA0AB 60%, #6B717C 100%)',
+                  border:       '1.5px solid #777E8A',
+                  borderTop:    'none',
+                  boxShadow:    'inset 0 -2px 4px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.35)',
+                  marginTop:    '0',
+                  flexShrink:   0,
+                }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Binding strip at top of card */}
-        <div
-          className="w-full flex-shrink-0"
-          style={{
-            height: '10px',
-            background: 'linear-gradient(180deg, #D1D5DB 0%, #E5E7EB 100%)',
-            borderBottom: '1px solid #C0C4CC',
-          }}
-        />
+        {/* ── Hero Image ─────────────────────────────────────────── */}
+        <div className="relative w-full flex-shrink-0" style={{ height: '255px' }}>
 
-        {/* ══ HERO IMAGE ════════════════════════════════════ */}
-        <div className="relative w-full flex-shrink-0 overflow-hidden" style={{ height: '255px' }}>
-
-          {/* Skeleton */}
+          {/* Shimmer skeleton */}
           {!imgLoaded && !imgError && (
             <div
               className="absolute inset-0 img-skeleton"
-              style={{ backgroundColor: `${theme.primary}70` }}
+              style={{ backgroundColor: `${theme.primary}80` }}
             />
           )}
 
-          {/* Gradient fallback */}
+          {/* Gradient fallback when image fails */}
           {imgError && (
             <div
               className="absolute inset-0"
@@ -183,7 +183,7 @@ export default function CalendarCard() {
             key={theme.image}
             src={theme.image}
             alt={`${theme.month} — ${theme.label}`}
-            onLoad={()  => { setImgLoaded(true); setImgError(false); }}
+            onLoad={()   => { setImgLoaded(true); setImgError(false); }}
             onError={(e) => {
               if (!imgError && theme.fallback && e.target.src !== theme.fallback) {
                 e.target.src = theme.fallback;
@@ -196,17 +196,20 @@ export default function CalendarCard() {
             referrerPolicy="no-referrer"
           />
 
-          {/* Subtle vignette at bottom */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30 pointer-events-none" />
+          {/* Bottom vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.35) 100%)' }}
+          />
 
-          {/* Top controls overlay */}
+          {/* Top-row controls: emoji label + dark-mode toggle */}
           <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between">
             <div
-              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-sm"
-              style={{ background: 'rgba(0,0,0,0.30)' }}
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1"
+              style={{ background: 'rgba(0,0,0,0.32)', backdropFilter: 'blur(6px)' }}
             >
               <span className="text-sm leading-none">{theme.emoji}</span>
-              <span className="text-white/80 text-[10px] font-medium tracking-wider">
+              <span className="text-[10px] font-semibold text-white/80 tracking-wider">
                 {theme.label}
               </span>
             </div>
@@ -214,68 +217,64 @@ export default function CalendarCard() {
           </div>
         </div>
 
-        {/* ══ WAVE DIVIDER + MONTH NAME ══════════════════════ */}
-        {/*  Pulled up via negative margin so peaks enter the image */}
-        <div className="relative flex-shrink-0" style={{ marginTop: '-56px', zIndex: 20 }}>
+        {/* ── Wave Chevron + Month / Year / Nav ────────────────────
+            Negative margin pulls the SVG peaks UP into the image. */}
+        <div className="relative flex-shrink-0" style={{ marginTop: '-54px', zIndex: 10 }}>
 
-          {/* SVG Wave — W-chevron in theme primary color */}
+          {/* SVG double-peak (W-shaped) wave */}
           <svg
-            viewBox="0 0 440 74"
+            viewBox="0 0 450 76"
             preserveAspectRatio="none"
             aria-hidden="true"
-            style={{ display: 'block', width: '100%', height: '74px' }}
+            style={{ display: 'block', width: '100%', height: '76px' }}
           >
-            {/* Subtle shadow layer */}
+            {/* Drop-shadow layer */}
             <path
-              d="M0,52 L110,10 L220,52 L330,10 L440,52 L440,74 L0,74 Z"
-              fill="rgba(0,0,0,0.12)"
-              transform="translate(0,3)"
+              d="M0,54 L112,12 L225,54 L338,12 L450,54 L450,76 L0,76 Z"
+              fill="rgba(0,0,0,0.13)"
+              transform="translate(0,4)"
             />
             {/* Main wave */}
             <path
-              d="M0,52 L110,10 L220,52 L330,10 L440,52 L440,74 L0,74 Z"
+              d="M0,54 L112,12 L225,54 L338,12 L450,54 L450,76 L0,76 Z"
               fill={theme.primary}
             />
           </svg>
 
-          {/* Month + Year + Nav — right side of wave */}
+          {/* Month + Year + nav — right-aligned over the wave */}
           <div
-            className="absolute inset-0 flex items-center justify-end pr-5"
-            style={{ paddingBottom: '4px' }}
+            className="absolute inset-0 flex items-end justify-end"
+            style={{ paddingRight: '20px', paddingBottom: '8px' }}
           >
             <div className="flex flex-col items-end">
               {/* Year */}
-              <span
-                className="font-light text-white/75 leading-none tracking-[4px] text-[11px]"
-              >
+              <span className="text-[11px] font-light text-white/70 tracking-[4px] leading-none mb-0.5">
                 {format(currentMonth, 'yyyy')}
               </span>
               {/* Month */}
               <span
-                className="font-extrabold text-white uppercase tracking-wide leading-tight text-[22px]"
-                style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '1px' }}
+                className="text-[21px] font-extrabold text-white uppercase leading-tight"
+                style={{ letterSpacing: '1px' }}
               >
                 {format(currentMonth, 'MMMM')}
               </span>
-              {/* Navigation */}
+              {/* Prev / Today / Next */}
               <div className="flex items-center gap-1 mt-1">
                 <button
                   id="prev-month-btn"
                   onClick={() => navigateMonth('prev')}
-                  className="p-1 rounded hover:bg-white/20 active:bg-white/30 transition-colors"
+                  className="p-0.5 rounded hover:bg-white/20 active:bg-white/30 transition-colors"
                   aria-label="Previous month"
-                  title="Previous month"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5 text-white/80" />
+                  <ChevronLeft className="w-4 h-4 text-white/80" />
                 </button>
 
                 {!isThisMonth(currentMonth) && (
                   <button
                     id="today-btn"
                     onClick={handleToday}
-                    className="px-2 py-0.5 rounded text-[9px] font-bold text-white/80 hover:bg-white/20 transition-colors tracking-wider uppercase"
+                    className="px-2 py-0.5 rounded text-[9px] font-bold text-white/80 hover:bg-white/20 transition-colors uppercase tracking-wider"
                     aria-label="Jump to today"
-                    title="Today"
                   >
                     Today
                   </button>
@@ -284,38 +283,35 @@ export default function CalendarCard() {
                 <button
                   id="next-month-btn"
                   onClick={() => navigateMonth('next')}
-                  className="p-1 rounded hover:bg-white/20 active:bg-white/30 transition-colors"
+                  className="p-0.5 rounded hover:bg-white/20 active:bg-white/30 transition-colors"
                   aria-label="Next month"
-                  title="Next month"
                 >
-                  <ChevronRight className="w-3.5 h-3.5 text-white/80" />
+                  <ChevronRight className="w-4 h-4 text-white/80" />
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ══ BOTTOM: NOTES (left) + CALENDAR (right) ════════ */}
-        <div className="flex flex-1 bg-white dark:bg-gray-900 px-3 pt-3 pb-4 gap-0">
+        {/* ── Bottom Section: Notes (left) + Calendar (right) ──────── */}
+        <div className="flex flex-1 bg-white dark:bg-gray-900 px-3 pt-3 pb-3 gap-0">
 
-          {/* ── Notes Column ── */}
-          <div className="flex flex-col flex-shrink-0 pr-3" style={{ width: '32%' }}>
-            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+          {/* Notes column */}
+          <div className="flex flex-col flex-shrink-0 pr-3" style={{ width: '31%' }}>
+            <p className="text-[9px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[2px] mb-1.5">
               Notes
             </p>
             <MonthNotes monthKey={monthKey} />
           </div>
 
-          {/* Vertical Divider */}
-          <div className="w-px bg-gray-100 dark:bg-gray-700 flex-shrink-0 self-stretch" />
+          {/* Divider */}
+          <div className="flex-shrink-0 self-stretch" style={{ width: '1px', background: '#E5E7EB' }} />
 
-          {/* ── Calendar Grid Column ── */}
+          {/* Calendar grid column — animated on month change */}
           <div
-            className="flex-1 min-w-0 pl-3 overflow-hidden"
             key={animKey}
-            style={{
-              animation: `${slideDir === 'next' ? 'slideFromRight' : 'slideFromLeft'} 0.32s cubic-bezier(0.16, 1, 0.3, 1) both`,
-            }}
+            className={slideDir === 'next' ? 'animate-slide-right' : 'animate-slide-left'}
+            style={{ flex: 1, minWidth: 0, paddingLeft: '10px', overflow: 'hidden' }}
           >
             <CalendarGrid
               currentMonth={currentMonth}
@@ -328,11 +324,11 @@ export default function CalendarCard() {
           </div>
         </div>
 
-        {/* ══ RANGE SUMMARY (conditionally) ══════════════════ */}
+        {/* ── Range Summary (shown only when ≥1 date selected) ──────── */}
         {startDate && (
           <div
-            className="mx-3 mb-3 rounded-xl overflow-hidden transition-all duration-300"
-            style={{ background: `${theme.primary}15` }}
+            className="mx-3 mb-3 rounded-xl overflow-hidden"
+            style={{ background: `color-mix(in srgb, ${theme.primary} 12%, white)` }}
           >
             <RangeSummary
               startDate={startDate}
@@ -342,23 +338,23 @@ export default function CalendarCard() {
           </div>
         )}
 
-        {/* ══ FOOTER HINT ════════════════════════════════════ */}
+        {/* ── Footer hint ───────────────────────────────────────────── */}
         <div
-          className="flex items-center justify-between px-3 pb-2.5"
+          className="flex items-center justify-between px-3 pb-2.5 gap-2"
           style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}
         >
-          <span className="text-[10px] text-gray-300 dark:text-gray-600 italic">
+          <span className="text-[9.5px] text-gray-300 dark:text-gray-600 italic leading-tight">
             {!startDate
               ? 'Tap a date to start your range'
               : !endDate
               ? 'Now tap an end date'
-              : 'Range selected — tap any date to reset'}
+              : 'Range set — tap any date to restart'}
           </span>
           {startDate && (
             <button
               id="clear-selection-btn"
               onClick={handleClear}
-              className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-red-400 transition-colors"
+              className="flex items-center gap-1 text-[9.5px] text-gray-400 hover:text-red-400 transition-colors shrink-0"
               aria-label="Clear selection"
             >
               <RotateCcw className="w-2.5 h-2.5" />
@@ -367,9 +363,24 @@ export default function CalendarCard() {
           )}
         </div>
 
-        {/* Page-curl corner */}
+        {/* Decorative page-curl corner */}
         <div className="page-curl-corner" />
       </div>
+
+      {/* Wall pin / hook above card */}
+      <div
+        aria-hidden="true"
+        className="absolute z-30"
+        style={{
+          top: 'calc(50% - 260px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '10px', height: '28px',
+          background: 'linear-gradient(180deg, #888 0%, #555 100%)',
+          borderRadius: '50% 50% 2px 2px',
+          boxShadow: '0 3px 6px rgba(0,0,0,0.4)',
+        }}
+      />
     </div>
   );
 }

@@ -15,9 +15,9 @@ import {
 import { HOLIDAYS } from '../data/holidays';
 
 // Week starts on Monday (weekStartsOn: 1), matching the reference image
-const WEEK_DAYS   = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 // Which day-of-week indices (0=Sun,6=Sat) are weekends
-const IS_WEEKEND  = (d) => getDay(d) === 0 || getDay(d) === 6;
+const IS_WEEKEND = (d) => getDay(d) === 0 || getDay(d) === 6;
 
 export default function CalendarGrid({
   currentMonth,
@@ -27,18 +27,18 @@ export default function CalendarGrid({
   onDateClick,
   onDateHover,
 }) {
-  const monthStart    = startOfMonth(currentMonth);
-  const monthEnd      = endOfMonth(monthStart);
-  const calStart      = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const calEnd        = endOfWeek(monthEnd,     { weekStartsOn: 1 });
-  const days          = eachDayOfInterval({ start: calStart, end: calEnd });
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(monthStart);
+  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start: calStart, end: calEnd });
 
   // ── Effective range (handles hover preview) ────────────────────────
   const getRange = () => {
     if (startDate && endDate) {
       return isBefore(startDate, endDate)
         ? { start: startDate, end: endDate }
-        : { start: endDate,   end: startDate };
+        : { start: endDate, end: startDate };
     }
     if (startDate && hoverDate) {
       return isBefore(startDate, hoverDate)
@@ -49,12 +49,12 @@ export default function CalendarGrid({
   };
   const range = getRange();
 
-  const inRange      = (d) => range ? isWithinInterval(d, range) : false;
+  const inRange = (d) => range ? isWithinInterval(d, range) : false;
   const isRangeStart = (d) => range ? isSameDay(d, range.start) : false;
-  const isRangeEnd   = (d) => range ? isSameDay(d, range.end)   : false;
-  const isSingleSel  = range ? isSameDay(range.start, range.end) : false;
+  const isRangeEnd = (d) => range ? isSameDay(d, range.end) : false;
+  const isSingleSel = range ? isSameDay(range.start, range.end) : false;
 
-  const getHoliday   = (d) => HOLIDAYS[format(d, 'yyyy-MM-dd')] || null;
+  const getHoliday = (d) => HOLIDAYS[format(d, 'yyyy-MM-dd')] || null;
 
   return (
     <div className="w-full select-none">
@@ -78,28 +78,28 @@ export default function CalendarGrid({
       {/* ── Day cells ── */}
       <div className="grid grid-cols-7">
         {days.map((day) => {
-          const inMonth   = isSameMonth(day, monthStart);
-          const today     = isToday(day);
-          const weekend   = IS_WEEKEND(day);
-          const holiday   = inMonth ? getHoliday(day) : null;
+          const inMonth = isSameMonth(day, monthStart);
+          const today = isToday(day);
+          const weekend = IS_WEEKEND(day);
+          const holiday = inMonth ? getHoliday(day) : null;
 
-          const sel       = inMonth && (
+          const sel = inMonth && (
             (startDate && isSameDay(day, startDate)) ||
-            (endDate   && isSameDay(day, endDate))
+            (endDate && isSameDay(day, endDate))
           );
-          const inRng     = inMonth && inRange(day);
-          const rStart    = inMonth && isRangeStart(day);
-          const rEnd      = inMonth && isRangeEnd(day);
-          const inMiddle  = inRng && !rStart && !rEnd && !isSingleSel;
+          const inRng = inMonth && inRange(day);
+          const rStart = inMonth && isRangeStart(day);
+          const rEnd = inMonth && isRangeEnd(day);
+          const inMiddle = inRng && !rStart && !rEnd && !isSingleSel;
 
           // Range strip: half-circle caps at start/end, square in middle
           const stripStyle = inRng && !isSingleSel ? {
-            position:   'absolute',
+            position: 'absolute',
             top: '50%', transform: 'translateY(-50%)',
-            height:     '24px',
+            height: '24px',
             background: `color-mix(in srgb, var(--color-primary) 18%, transparent)`,
-            left:  rStart ? '50%' : '0',
-            right: rEnd   ? '50%' : '0',
+            left: rStart ? '50%' : '0',
+            right: rEnd ? '50%' : '0',
             borderRadius: rStart ? '12px 0 0 12px' : rEnd ? '0 12px 12px 0' : '0',
             zIndex: 0,
           } : null;
